@@ -8,10 +8,9 @@ function print_usage {
   echo "USAGE: git-rewrite-author [-fn|--from_name FROM_NAME] [-fe|--from_email FROM_EMAIL] [-tn|--to_name TO_NAME] [-te|--to_email TO_EMAIL]
 
 OPTIONS:
-  -fn, --from_name        Name to replace
-  -fe, --from_email       Email to replace
-  -tn, --to_name          New name to use
-  -te, --to_email         New email to use
+  -oe, --old_email        Email to replace
+  -cn, --correct_name     New name to use
+  -ce, --correct_email    New email to use
   -h, --help              Show help information.
 
 INSTRUCTIONS:
@@ -44,23 +43,18 @@ do
 	    exit 0
 	    shift
     ;;
-    -fn|--from_name)
-	    FROM_NAME="$2"
+    -oe|--old_email)
+	    OLD_EMAIL="$2"
 	    shift
 	    shift
     ;;
-    -fe|--from_email)
-	    FROM_EMAIL="$2"
-	    shift
-	    shift
-    ;;
-    -tn|--to_name)
-	    TO_NAME="$2"
+    -cn|--correct_name)
+	    CORRECT_NAME="$2"
       shift
       shift
     ;;
-    -te|--to_email)
-      TO_EMAIL="$2"
+    -ce|--correct_email)
+      CORRECT_EMAIL="$2"
       shift
       shift
     ;;
@@ -72,30 +66,30 @@ do
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-## Ensure either a name or email to change from has been provided
-if [ -z "$FROM_NAME" ] && [ -z "$FROM_EMAIL" ]; then
-   echo "Please provide either a name or email to change from using -fn or -fe"
+## Ensure an email to replace has been provided
+if [ -z "$OLD_EMAIL" ]; then
+   echo "Please provide an email to replace using -oe"
    exit 1
 fi
 
-## Ensure either a name or email to change to has been provided
-if [ -z "$TO_NAME" ] && [ -z "$TO_EMAIL" ]; then
-   echo "Please provide either a name or email to change to using -tn or -te"
+## Ensure a new name and email have been provided
+if [ -z "$CORRECT_NAME" ] || [ -z "$CORRECT_EMAIL" ]; then
+   echo "Please provide a name or email to change to using -cn and -ce"
    exit 2
 fi
 
 ## Run the Git command to perform the replacement
 git filter-branch --env-filter "
 
-  if [ \"\$GIT_COMMITTER_NAME\" = \"${FROM_NAME}\" ] || [ \"\$GIT_COMMITTER_EMAIL\" = \"${FROM_EMAIL}\" ]
+  if [ \"\$GIT_COMMITTER_EMAIL\" = \"$OLD_EMAIL\" ]
   then
-    [ ! -z \"${FROM_NAME}\" ] && export GIT_COMMITTER_NAME=\"${TO_NAME}\"
-    [ ! -z \"${FROM_EMAIL}\" ] && export GIT_COMMITTER_EMAIL=\"${TO_EMAIL}\"
+      export GIT_COMMITTER_NAME=\"$CORRECT_NAME\"
+      export GIT_COMMITTER_EMAIL=\"$CORRECT_EMAIL\"
   fi
-  if [ \"\$GIT_AUTHOR_NAME\" = \"${FROM_NAME}\" ] || [ \"\$GIT_AUTHOR_EMAIL\" = \"${FROM_EMAIL}\" ]
+  if [ \"\$GIT_AUTHOR_EMAIL\" = \"$OLD_EMAIL\" ]
   then
-    [ ! -z \"${FROM_NAME}\" ] && export GIT_AUTHOR_NAME=\"${TO_NAME}\"
-    [ ! -z \"${FROM_EMAIL}\" ] && export GIT_AUTHOR_EMAIL=\"${TO_EMAIL}\"
+      export GIT_AUTHOR_NAME=\"$CORRECT_NAME\"
+      export GIT_AUTHOR_EMAIL=\"$CORRECT_EMAIL\"
   fi
   " $@ --tag-name-filter cat -- --branches --tags
 
