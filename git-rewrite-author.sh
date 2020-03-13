@@ -1,11 +1,11 @@
 
 #!/bin/bash
 
-# A script to change the author and committer information throughout the Git repository's history. You can replace 
-# the name and/or email address.
+# A script to change the author and committer information throughout a Git repository's history. You provide an old 
+# email address to match against and the correct name and email to replace with.
 
 function print_usage {
-  echo "USAGE: git-rewrite-author [-fn|--from_name FROM_NAME] [-fe|--from_email FROM_EMAIL] [-tn|--to_name TO_NAME] [-te|--to_email TO_EMAIL]
+  echo "USAGE: git-rewrite-author [-oe|--old_email EMAIL] [-cn|--correct_name NAME] [-ce|--correct_email EMAIL]
 
 OPTIONS:
   -oe, --old_email        Email to replace
@@ -19,6 +19,7 @@ INSTRUCTIONS:
   - Change into it's directory:
     cd repo.git
   - Run git-rewrite-author.
+  - Check you are happy with the changes, by looking at the git log.
   - Force-push the changes to update the repository remote:
     git push --force --tags origin 'refs/heads/*'
   - Delete the bare clone:
@@ -26,8 +27,8 @@ INSTRUCTIONS:
     rm -rf repo.git
 
 ADDITIONAL:
-  - You must provide either an old name or an old email to match against.
-  - You must provide either a new name or new email to change to.
+  - You must provide an old email to match against.
+  - You must provide a new name and email to change to.
   - Both the author and committer details will be replaced."
 }
 
@@ -74,7 +75,7 @@ fi
 
 ## Ensure a new name and email have been provided
 if [ -z "$CORRECT_NAME" ] || [ -z "$CORRECT_EMAIL" ]; then
-   echo "Please provide a name or email to change to using -cn and -ce"
+   echo "Please provide a name and email to change to using -cn and -ce"
    exit 2
 fi
 
