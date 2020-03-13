@@ -94,4 +94,9 @@ git filter-branch --env-filter "
   fi
   " $@ --tag-name-filter cat -- --branches --tags
 
+echo "Check you are happy with the changes, by looking at the git log."
+echo "Please be careful and make sure you are sure you want to continue."
+echo "If you are then force-push the changes using:"
+echo "git push --force --tags origin 'refs/heads/*'"
+
 exit 0
